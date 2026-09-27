@@ -22,12 +22,21 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 
+const { getDbStatus } = require('./config/db');
+const mongoose = require('mongoose');
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const db = getDbStatus();
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     service: 'Online Quiz Maker API',
+    database: {
+      connected: db.isConnected,
+      mode: db.isConnected ? 'MongoDB Atlas' : 'In-Memory Fallback',
+      host: db.isConnected ? mongoose.connection.host : null,
+    },
   });
 });
 

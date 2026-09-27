@@ -2287,3 +2287,354 @@ h1, h2, h3, h4 {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Login Prompt Modal & Notifications
+   ========================================================================== */
+.qm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1.25rem;
+  animation: modalFadeIn 0.25s ease-out;
+}
+
+.qm-modal-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: 2.5rem 2rem;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-light);
+  transform: translateY(0);
+  animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.qm-modal-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.qm-modal-close-btn:hover {
+  background: #f1f5f9;
+  color: var(--text-primary);
+}
+
+.qm-modal-icon-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: #eff6ff;
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem auto;
+  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
+}
+
+.qm-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.qm-modal-message {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1.75rem;
+}
+
+.qm-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.qm-modal-cancel-text {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.15s ease;
+}
+
+.qm-modal-cancel-text:hover {
+  color: var(--text-primary);
+}
+
+.qm-form-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ==========================================================================
+   FAQ & Support Page Styles
+   ========================================================================== */
+.qm-faq-page {
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.qm-faq-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.qm-faq-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.qm-faq-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+}
+
+.qm-faq-section {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 2.5rem;
+}
+
+.qm-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.qm-faq-item {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.qm-faq-item.open {
+  border-color: var(--primary-light);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
+}
+
+.qm-faq-question-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.15rem 1.25rem;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.qm-faq-question-btn:hover {
+  background: #f8fafc;
+}
+
+.qm-faq-q-text {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.qm-faq-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.qm-faq-answer {
+  padding: 0 1.25rem 1.25rem 1.25rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.95rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.qm-support-form-card {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: 2.25rem 2rem;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-card);
+}
+
+.qm-support-sub {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.qm-contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.qm-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.qm-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.qm-form-group label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.qm-form-group input,
+.qm-form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.qm-form-group input:focus,
+.qm-form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.qm-contact-success {
+  text-align: center;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ==========================================================================
+   Legal Pages (Privacy & Terms)
+   ========================================================================== */
+.qm-legal-page {
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.qm-legal-card {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-card);
+}
+
+.qm-legal-header {
+  text-align: center;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.qm-legal-icon {
+  color: var(--primary);
+  margin-bottom: 0.75rem;
+}
+
+.qm-legal-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.qm-legal-updated {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.qm-legal-content section {
+  margin-bottom: 1.75rem;
+}
+
+.qm-legal-content h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.qm-legal-content p {
+  color: var(--text-secondary);
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
+
+

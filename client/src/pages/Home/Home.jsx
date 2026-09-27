@@ -4,6 +4,8 @@ import PageContainer from '../../components/layout/PageContainer';
 import Button from '../../components/common/Button';
 import QuizCard from '../../components/quiz/QuizCard';
 import quizService from '../../services/quizService';
+import { useAuth } from '../../hooks/useAuth';
+import LoginPromptModal from '../../components/common/LoginPromptModal';
 import { HeroDeskIllustration } from '../../assets/illustrations/Illustrations';
 import {
   ArrowRight,
@@ -18,8 +20,11 @@ import {
 
 export const Home = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [featuredQuizzes, setFeaturedQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [selectedQuizId, setSelectedQuizId] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -146,11 +151,25 @@ export const Home = () => {
             <QuizCard
               key={quiz._id}
               quiz={quiz}
-              onTakeQuiz={() => navigate(`/take-quiz/${quiz._id}`)}
+              onTakeQuiz={() => {
+                if (!isAuthenticated) {
+                  setSelectedQuizId(quiz._id);
+                  setShowLoginModal(true);
+                } else {
+                  navigate(`/take-quiz/${quiz._id}`);
+                }
+              }}
             />
           ))}
         </div>
       </section>
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        targetUrl={selectedQuizId ? `/take-quiz/${selectedQuizId}` : '/quizzes'}
+      />
 
       {/* Community Stats Banner */}
       <section className="qm-stats-banner">

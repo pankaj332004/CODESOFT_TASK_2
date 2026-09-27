@@ -6,17 +6,30 @@ import Input from '../../components/common/Input';
 import EmptyState from '../../components/common/EmptyState';
 import Loader from '../../components/common/Loader';
 import quizService from '../../services/quizService';
+import { useAuth } from '../../hooks/useAuth';
+import LoginPromptModal from '../../components/common/LoginPromptModal';
 import { CATEGORIES } from '../../utils/constants';
 import { Search, Compass } from 'lucide-react';
 
 export const QuizListing = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isAuthenticated } = useAuth();
 
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [category, setCategory] = useState(searchParams.get('category') || 'All Categories');
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [selectedQuizId, setSelectedQuizId] = useState(null);
+
+  // Sync state when URL search params change (e.g. from footer links)
+  useEffect(() => {
+    const urlCat = searchParams.get('category') || 'All Categories';
+    const urlSearch = searchParams.get('search') || '';
+    setCategory(urlCat);
+    setSearch(urlSearch);
+  }, [searchParams]);
 
   useEffect(() => {
     let isMounted = true;
@@ -125,11 +138,25 @@ export const QuizListing = () => {
             <QuizCard
               key={quiz._id}
               quiz={quiz}
-              onTakeQuiz={() => navigate(`/take-quiz/${quiz._id}`)}
+              onTakeQuiz={() => {
+                if (!isAuthenticated) {
+                  setSelectedQuizId(quiz._id);
+                  setShowLoginModal(true);
+                } else {
+                  navigate(`/take-quiz/${quiz._id}`);
+                }
+              }}
             />
           ))}
         </div>
       )}
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        targetUrl={selectedQuizId ? `/take-quiz/${selectedQuizId}` : '/quizzes'}
+      />
     </PageContainer>
   );
 };

@@ -32,9 +32,9 @@ export const Footer = () => {
 
           <div className="footer-col">
             <h4 className="footer-col-title">Legal & Community</h4>
-            <a href="#privacy" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
-            <a href="#terms" onClick={(e) => e.preventDefault()}>Terms of Service</a>
-            <a href="#support" onClick={(e) => e.preventDefault()}>Support & FAQ</a>
+            <Link to="/privacy">Privacy Policy</Link>
+            <Link to="/terms">Terms of Service</Link>
+            <Link to="/support">Support & FAQ</Link>
           </div>
         </div>
       </div>

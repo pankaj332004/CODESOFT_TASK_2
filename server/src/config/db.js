@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+const dns = require('dns');
+
 let isConnected = false;
 let useMemoryFallback = false;
 
@@ -7,10 +9,18 @@ const connectDB = async () => {
   try {
     const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/quiz_maker';
     
-    // Set a quick server selection timeout so we can gracefully fallback if local MongoDB isn't running
+    // For Windows environments where local ISP DNS fails on SRV records
+    if (mongoUri.startsWith('mongodb+srv')) {
+      try {
+        dns.setServers(['8.8.8.8', '1.1.1.1']);
+      } catch (dnsErr) {
+        // Fallback silently if unable to override DNS servers
+      }
+    }
+
     mongoose.set('strictQuery', false);
     await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 2000,
+      serverSelectionTimeoutMS: 5000,
     });
     
     isConnected = true;

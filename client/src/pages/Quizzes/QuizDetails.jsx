@@ -4,6 +4,8 @@ import PageContainer from '../../components/layout/PageContainer';
 import Button from '../../components/common/Button';
 import Loader from '../../components/common/Loader';
 import quizService from '../../services/quizService';
+import { useAuth } from '../../hooks/useAuth';
+import LoginPromptModal from '../../components/common/LoginPromptModal';
 import { getCategoryIcon } from '../../assets/icons/CategoryIcons';
 import { StackedBooks, QuizNotepad } from '../../assets/illustrations/Illustrations';
 import { Clock, HelpCircle, User, ArrowLeft, Play, ShieldAlert } from 'lucide-react';
@@ -11,8 +13,10 @@ import { Clock, HelpCircle, User, ArrowLeft, Play, ShieldAlert } from 'lucide-re
 export const QuizDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     quizService
@@ -99,7 +103,13 @@ export const QuizDetails = () => {
           <Button
             variant="primary"
             size="lg"
-            onClick={() => navigate(`/take-quiz/${quiz._id}`)}
+            onClick={() => {
+              if (!isAuthenticated) {
+                setShowLoginModal(true);
+              } else {
+                navigate(`/take-quiz/${quiz._id}`);
+              }
+            }}
             icon={<Play size={20} fill="currentColor" />}
             className="details-start-btn"
           >
@@ -107,6 +117,12 @@ export const QuizDetails = () => {
           </Button>
         </div>
       </div>
+
+      <LoginPromptModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        targetUrl={`/take-quiz/${quiz._id}`}
+      />
     </PageContainer>
   );
 };

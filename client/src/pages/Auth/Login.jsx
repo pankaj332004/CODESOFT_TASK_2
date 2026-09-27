@@ -72,6 +72,13 @@ export const Login = () => {
             <p className="qm-auth-subtitle">Log in to track your scores, create tests, and compete.</p>
           </div>
 
+          {location.state?.message && !error && (
+            <div className="qm-form-info-banner">
+              <Sparkles size={18} />
+              <span>{location.state.message}</span>
+            </div>
+          )}
+
           {error && (
             <div className="qm-form-error-banner">
               <AlertCircle size={18} />
