@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { QuizLogo } from '../../assets/icons/CategoryIcons';
 import Button from '../common/Button';
+import ThemeToggle from '../common/ThemeToggle';
 import { LogOut, User as UserIcon, PlusCircle } from 'lucide-react';
 
 export const Navbar = () => {
@@ -45,8 +46,9 @@ export const Navbar = () => {
           </NavLink>
         </nav>
 
-        {/* Auth Buttons */}
+        {/* Actions: Theme Toggle & Auth Buttons */}
         <div className="qm-nav-actions">
+          <ThemeToggle />
           {isAuthenticated ? (
             <div className="qm-user-menu">
               <NavLink to="/dashboard" className="qm-user-profile-badge">

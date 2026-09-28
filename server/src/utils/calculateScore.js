@@ -23,6 +23,8 @@ const calculateScore = (questions, userAnswers = {}) => {
       correctAnswer: q.correctAnswer,
       isCorrect,
       explanation: q.explanation || '',
+      quickExplanation: q.quickExplanation || '',
+      concept: q.concept || '',
     };
   });
 

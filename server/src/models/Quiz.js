@@ -19,6 +19,14 @@ const questionSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  quickExplanation: {
+    type: String,
+    default: '',
+  },
+  concept: {
+    type: String,
+    default: '',
+  },
 });
 
 const quizSchema = new mongoose.Schema(

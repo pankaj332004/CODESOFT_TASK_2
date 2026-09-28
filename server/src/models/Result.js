@@ -20,10 +20,27 @@ const answerRecordSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
+  explanation: {
+    type: String,
+    default: '',
+  },
+  quickExplanation: {
+    type: String,
+    default: '',
+  },
+  concept: {
+    type: String,
+    default: '',
+  },
 });
 
 const resultSchema = new mongoose.Schema(
   {
+    mode: {
+      type: String,
+      enum: ['practice', 'exam'],
+      default: 'practice',
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

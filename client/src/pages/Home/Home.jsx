@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PageContainer from '../../components/layout/PageContainer';
 import Button from '../../components/common/Button';
 import QuizCard from '../../components/quiz/QuizCard';
+import QuestionOfTheDay from '../../components/common/QuestionOfTheDay';
 import quizService from '../../services/quizService';
 import { useAuth } from '../../hooks/useAuth';
 import LoginPromptModal from '../../components/common/LoginPromptModal';
@@ -128,6 +129,11 @@ export const Home = () => {
         </div>
       </section>
 
+      {/* Daily Brain Boost: Question of the Day */}
+      <section className="qm-home-qotd-section">
+        <QuestionOfTheDay />
+      </section>
+
       {/* Featured Quizzes Preview */}
       <section className="qm-home-quizzes-section">
         <div className="section-header-row">
@@ -151,12 +157,13 @@ export const Home = () => {
             <QuizCard
               key={quiz._id}
               quiz={quiz}
-              onTakeQuiz={() => {
+              onTakeQuiz={(quizItem, mode = 'exam') => {
+                const targetId = quizItem?._id || quiz._id;
                 if (!isAuthenticated) {
-                  setSelectedQuizId(quiz._id);
+                  setSelectedQuizId(targetId);
                   setShowLoginModal(true);
                 } else {
-                  navigate(`/take-quiz/${quiz._id}`);
+                  navigate(`/take-quiz/${targetId}?mode=${mode}`);
                 }
               }}
             />

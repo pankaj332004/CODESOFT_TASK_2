@@ -22,6 +22,7 @@ export const QuizListing = () => {
   const [category, setCategory] = useState(searchParams.get('category') || 'All Categories');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedQuizId, setSelectedQuizId] = useState(null);
+  const [selectedMode, setSelectedMode] = useState('practice');
 
   // Sync state when URL search params change (e.g. from footer links)
   useEffect(() => {
@@ -138,12 +139,13 @@ export const QuizListing = () => {
             <QuizCard
               key={quiz._id}
               quiz={quiz}
-              onTakeQuiz={() => {
+              onTakeQuiz={(quizItem, mode = 'exam') => {
                 if (!isAuthenticated) {
-                  setSelectedQuizId(quiz._id);
+                  setSelectedQuizId(quizItem._id);
+                  setSelectedMode(mode);
                   setShowLoginModal(true);
                 } else {
-                  navigate(`/take-quiz/${quiz._id}`);
+                  navigate(`/take-quiz/${quizItem._id}?mode=${mode}`);
                 }
               }}
             />
@@ -155,7 +157,7 @@ export const QuizListing = () => {
       <LoginPromptModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        targetUrl={selectedQuizId ? `/take-quiz/${selectedQuizId}` : '/quizzes'}
+        targetUrl={selectedQuizId ? `/take-quiz/${selectedQuizId}?mode=${selectedMode}` : '/quizzes'}
       />
     </PageContainer>
   );

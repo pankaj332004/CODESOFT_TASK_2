@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useState, useEffect, useRef, useCallback } from 'react';
 import quizService from '../services/quizService';
 
 export const QuizContext = createContext(null);
@@ -11,6 +11,10 @@ export const QuizProvider = ({ children }) => {
   const [isTakingQuiz, setIsTakingQuiz] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [lastResult, setLastResult] = useState(null);
+
+  const [quizMode, setQuizMode] = useState('practice'); // 'practice' (Learn mode) or 'exam' (Timed test)
+  const [checkedFeedback, setCheckedFeedback] = useState({});
+  const [flaggedQuestions, setFlaggedQuestions] = useState({});
 
   const timerRef = useRef(null);
 
@@ -29,41 +33,89 @@ export const QuizProvider = ({ children }) => {
     };
   }, [isTakingQuiz]);
 
-  const startQuiz = (quiz) => {
+  const startQuiz = useCallback((quiz, mode = 'practice') => {
     setCurrentQuiz(quiz);
     setCurrentQuestionIndex(0);
     setSelectedAnswers({});
+    setCheckedFeedback({});
+    setFlaggedQuestions({});
     setElapsedTime(0);
     setIsTakingQuiz(true);
     setLastResult(null);
-  };
+    setQuizMode(mode);
+  }, []);
 
-  const selectAnswer = (questionIndex, answer) => {
+  const toggleFlagQuestion = useCallback((index) => {
+    setFlaggedQuestions((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  }, []);
+
+  const selectAnswer = useCallback((questionIndex, answer) => {
     setSelectedAnswers((prev) => ({
       ...prev,
       [questionIndex]: answer,
     }));
-  };
 
-  const nextQuestion = () => {
+    // In practice/learn mode, immediately compute detailed feedback
+    if (quizMode === 'practice' && currentQuiz && currentQuiz.questions && currentQuiz.questions[questionIndex]) {
+      const q = currentQuiz.questions[questionIndex];
+      const isCorrect = String(answer).trim() === String(q.correctAnswer).trim();
+      const feedback = {
+        isCorrect,
+        selectedAnswer: answer,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation || '',
+        quickExplanation: q.quickExplanation || q.explanation || '',
+        concept: q.concept || `${currentQuiz.category || 'General'} → ${currentQuiz.title || 'Core Concepts'}`,
+      };
+      setCheckedFeedback((prev) => ({
+        ...prev,
+        [questionIndex]: feedback,
+      }));
+    } else if (quizMode === 'exam') {
+      setCheckedFeedback((prev) => {
+        if (!prev[questionIndex]) return prev;
+        const copy = { ...prev };
+        delete copy[questionIndex];
+        return copy;
+      });
+    }
+  }, [quizMode, currentQuiz]);
+
+  const retryQuestion = useCallback((questionIndex) => {
+    setSelectedAnswers((prev) => {
+      const copy = { ...prev };
+      delete copy[questionIndex];
+      return copy;
+    });
+    setCheckedFeedback((prev) => {
+      const copy = { ...prev };
+      delete copy[questionIndex];
+      return copy;
+    });
+  }, []);
+
+  const nextQuestion = useCallback(() => {
     if (currentQuiz && currentQuestionIndex < currentQuiz.questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     }
-  };
+  }, [currentQuiz, currentQuestionIndex]);
 
-  const prevQuestion = () => {
+  const prevQuestion = useCallback(() => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prev) => prev - 1);
     }
-  };
+  }, [currentQuestionIndex]);
 
-  const goToQuestion = (index) => {
+  const goToQuestion = useCallback((index) => {
     if (currentQuiz && index >= 0 && index < currentQuiz.questions.length) {
       setCurrentQuestionIndex(index);
     }
-  };
+  }, [currentQuiz]);
 
-  const submitQuiz = async () => {
+  const submitQuiz = useCallback(async () => {
     if (!currentQuiz) return null;
     setIsTakingQuiz(false);
     setSubmitting(true);
@@ -123,15 +175,17 @@ export const QuizProvider = ({ children }) => {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [currentQuiz, selectedAnswers, elapsedTime]);
 
-  const resetQuiz = () => {
+  const resetQuiz = useCallback(() => {
     setCurrentQuiz(null);
     setCurrentQuestionIndex(0);
     setSelectedAnswers({});
+    setCheckedFeedback({});
+    setFlaggedQuestions({});
     setElapsedTime(0);
     setIsTakingQuiz(false);
-  };
+  }, []);
 
   return (
     <QuizContext.Provider
@@ -139,7 +193,14 @@ export const QuizProvider = ({ children }) => {
         currentQuiz,
         currentQuestionIndex,
         selectedAnswers,
+        checkedFeedback,
+        flaggedQuestions,
+        toggleFlagQuestion,
+        quizMode,
+        setQuizMode,
+        retryQuestion,
         elapsedTime,
+        setElapsedTime,
         isTakingQuiz,
         submitting,
         lastResult,

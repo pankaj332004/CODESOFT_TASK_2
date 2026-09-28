@@ -2,14 +2,36 @@
 
 An interactive, responsive full-stack web application for creating, sharing, and taking online quizzes. Built with React (Vite), Node.js, Express, and modern Vanilla CSS styling with custom educational illustrations.
 
-## 🚀 Features
+## 🔄 The Complete Learning Lifecycle
 
-- **Explore Quizzes**: Browse quizzes across multiple categories (General Knowledge, Science, Math, History, Computer Science, English Grammar, Sports, Current Affairs) with live search and category filters.
-- **Interactive Quiz Taking**: Live question progression, option selection, timed mode, question navigator, and instant feedback.
-- **Detailed Results & Analytics**: Final score calculation, accuracy percentages, elapsed time, answer review with detailed correct/incorrect breakdown.
-- **Quiz Creator & Editor**: Build custom quizzes with title, category, description, dynamic multiple-choice questions, and correct answer selection.
-- **User Dashboard**: Track created quizzes, attempt history, average scores, and manage your quizzes.
-- **Authentication**: JWT-based login and registration with guest account support.
+```
+QuizMaker
+    ↓
+ Create   → Author custom questions with detailed explanations & concept breadcrumbs
+    ↓
+Practice  → Test your knowledge with immediate validation & retry capability
+    ↓
+  Learn   → Read in-depth "Why it's correct" or "Not quite" breakdown with Concept trails
+    ↓
+ Analyze  → Track score trends via the "Your Performance" progression chart
+    ↓
+ Improve  → Target weak topics (e.g. DBMS, Computer Networks) with tailored practice sessions
+```
+
+## 🚀 Key Features
+
+- **Practice & Learn Mode**: Real-time feedback after selecting an option:
+  - ✓ **Correct**: Congratulatory badge, detailed explanation, and concept mapping (`Concept: Web Development → JavaScript`).
+  - ✕ **Not quite**: Direct comparison (`You selected: Database`, `Correct answer: Programming language`), quick explanation, concept trail, and a 1-click **Try Again** option.
+- **Question Navigator**: Interactive `[1] [2] ... [13]` question grid with live status indicators (Correct, Needs Review, Current, Unanswered).
+- **Personal Learning Dashboard**:
+  - `Welcome back, {User} 👋` header with the visual 5-stage loop pipeline.
+  - Key metrics: **Quizzes Taken**, **Avg Score**, **Quizzes Created**.
+  - **Recent Attempts**: Instant breakdown (e.g., `JavaScript Basics 90% ✓`, `DBMS Fundamentals 80% ✓`, `Computer Networks 70% ✓`).
+  - **Your Performance Chart**: Smooth graphical progression chart with Y-axis markers (`100% ┤`, `80% ┤`, `60% ┤`, `40% ┤`) and day tick labels.
+  - **Analyze & Improve Action Banner**: Detects low-scoring topics and launches direct practice.
+- **Quiz Creator & Editor**: Build custom quizzes with dynamic questions, options, and explanations.
+- **Dual Storage Resilience**: Seamless connection to MongoDB Atlas with automated built-in in-memory fallback.
 
 ## 📁 Project Architecture
 

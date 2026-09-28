@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../common/Button';
-import { ArrowLeft, RotateCcw, Eye, Share2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Eye, Share2, LayoutDashboard } from 'lucide-react';
 
 export const ResultActions = ({
   onReview,
@@ -41,6 +41,17 @@ export const ResultActions = ({
       </div>
 
       <div className="qm-secondary-actions-row">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/dashboard')}
+          icon={<LayoutDashboard size={16} />}
+          iconPosition="left"
+          className="dashboard-link-btn"
+        >
+          Dashboard
+        </Button>
+
         <Button
           variant="ghost"
           size="sm"

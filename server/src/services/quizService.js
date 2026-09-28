@@ -4,6 +4,284 @@ const { getDbStatus } = require('../config/db');
 // Seed quizzes identical to the UI mockups
 const initialQuizzes = [
   {
+    _id: 'quiz_js_basics',
+    title: 'JavaScript Basics',
+    description: 'Master core JavaScript concepts: variables, data types, closures, arrays, promises, and web development fundamentals.',
+    category: 'Computer Science',
+    icon: 'laptop',
+    difficulty: 'Easy',
+    timeLimitMinutes: 15,
+    creatorName: 'Rahul Verma',
+    questions: [
+      {
+        _id: 'q_js_1',
+        questionText: 'What is JavaScript?',
+        options: ['Programming language', 'Database', 'Operating system', 'Browser'],
+        correctAnswer: 'Programming language',
+        explanation: 'JavaScript is a programming language primarily used to add interactivity and dynamic behavior to web pages.',
+        quickExplanation: 'JavaScript is a programming language, while MongoDB is a database system.',
+        concept: 'Web Development → JavaScript',
+      },
+      {
+        _id: 'q_js_2',
+        questionText: 'Which keyword in modern JavaScript declares a block-scoped variable that can be reassigned?',
+        options: ['var', 'let', 'const', 'global'],
+        correctAnswer: 'let',
+        explanation: 'The "let" keyword declares block-scoped variables that can be reassigned, introduced in ES6.',
+        quickExplanation: '"const" prevents reassignment, whereas "let" allows you to reassign new values within the same block scope.',
+        concept: 'JavaScript → Variables & Scope',
+      },
+      {
+        _id: 'q_js_3',
+        questionText: 'What is the return value of typeof null in JavaScript?',
+        options: ['null', 'undefined', 'object', 'boolean'],
+        correctAnswer: 'object',
+        explanation: 'In JavaScript, typeof null returns "object", which is a historical bug in the language implementation preserved for backward compatibility.',
+        quickExplanation: 'While null is a primitive type, typeof incorrectly reports "object". Use value === null to test for null.',
+        concept: 'JavaScript → Data Types & Type Coercion',
+      },
+      {
+        _id: 'q_js_4',
+        questionText: 'Which array method adds an element to the end of an array?',
+        options: ['pop()', 'push()', 'shift()', 'unshift()'],
+        correctAnswer: 'push()',
+        explanation: 'The push() method adds one or more elements to the end of an array and returns the new length.',
+        quickExplanation: 'push() adds to the end, pop() removes from the end, unshift() adds to the beginning, and shift() removes from the beginning.',
+        concept: 'JavaScript → Array Methods',
+      },
+      {
+        _id: 'q_js_5',
+        questionText: 'What does the strict equality operator (===) compare?',
+        options: ['Values only with type conversion', 'Both value and type without conversion', 'Object memory references only', 'String representations'],
+        correctAnswer: 'Both value and type without conversion',
+        explanation: 'Strict equality (===) verifies that both the type and the value of both operands are identical without implicit coercion.',
+        quickExplanation: '== performs type coercion (e.g. 5 == "5" is true), whereas === returns false unless types also match.',
+        concept: 'JavaScript → Operators & Comparison',
+      },
+      {
+        _id: 'q_js_6',
+        questionText: 'What is a closure in JavaScript?',
+        options: [
+          'A function bundled together with references to its surrounding lexical environment',
+          'A method to close browser tabs programmatically',
+          'A syntax error indicating an unclosed brace',
+          'A database connection pool terminate method',
+        ],
+        correctAnswer: 'A function bundled together with references to its surrounding lexical environment',
+        explanation: 'A closure gives a function access to its outer scope even after the outer function has executed and returned.',
+        quickExplanation: 'Closures preserve variables from the parent lexical environment across asynchronous and deferred executions.',
+        concept: 'JavaScript → Functions & Closures',
+      },
+      {
+        _id: 'q_js_7',
+        questionText: 'Which method converts a JavaScript object into a JSON string?',
+        options: ['JSON.parse()', 'JSON.stringify()', 'JSON.objectify()', 'JSON.encode()'],
+        correctAnswer: 'JSON.stringify()',
+        explanation: 'JSON.stringify() serializes a JavaScript object into a JSON-formatted string.',
+        quickExplanation: 'JSON.parse() converts a JSON string into an object, while JSON.stringify() converts an object to a string.',
+        concept: 'Web Development → JSON & Data Serialization',
+      },
+      {
+        _id: 'q_js_8',
+        questionText: 'What is the purpose of the Promise object in JavaScript?',
+        options: [
+          'To represent the eventual completion or failure of an asynchronous operation',
+          'To prevent memory leaks in event listeners',
+          'To enforce strong typing at runtime',
+          'To encrypt user credentials stored in local storage',
+        ],
+        correctAnswer: 'To represent the eventual completion or failure of an asynchronous operation',
+        explanation: 'A Promise represents a proxy for a value not necessarily known when created, handling asynchronous callbacks cleanly.',
+        quickExplanation: 'Promises manage asynchronous workflows with .then(), .catch(), and modern async/await syntax.',
+        concept: 'Asynchronous Programming → Promises & Event Loop',
+      },
+      {
+        _id: 'q_js_9',
+        questionText: 'Which function schedules code execution after a specified delay in milliseconds?',
+        options: ['setInterval()', 'setTimeout()', 'setDelay()', 'requestWait()'],
+        correctAnswer: 'setTimeout()',
+        explanation: 'setTimeout() calls a function or executes a code snippet after a specified delay.',
+        quickExplanation: 'setTimeout() runs once after the delay, while setInterval() repeats continuously until cleared.',
+        concept: 'Web Development → Timers & Web APIs',
+      },
+      {
+        _id: 'q_js_10',
+        questionText: 'What does NaN stand for and represent in JavaScript?',
+        options: [
+          'Not a Number (a numeric property representing an unrepresentable value)',
+          'Negative Array Node',
+          'Null and Non-existent',
+          'Network Access Node',
+        ],
+        correctAnswer: 'Not a Number (a numeric property representing an unrepresentable value)',
+        explanation: 'NaN represents a computational error resulting from an undefined or unrepresentable calculation. Interestingly, typeof NaN is "number".',
+        quickExplanation: 'Operations like "abc" / 2 evaluate to NaN. Use Number.isNaN() to safely test for it.',
+        concept: 'JavaScript → Numbers & Primitives',
+      },
+      {
+        _id: 'q_js_11',
+        questionText: 'Which array method creates a new array populated with the results of calling a provided function on every element?',
+        options: ['forEach()', 'filter()', 'map()', 'reduce()'],
+        correctAnswer: 'map()',
+        explanation: 'map() transforms each element and returns a brand-new array of equal length.',
+        quickExplanation: 'forEach() executes side effects without returning a new array; map() always returns a new transformed array.',
+        concept: 'Functional Programming → Array Transformations',
+      },
+      {
+        _id: 'q_js_12',
+        questionText: 'What is the Document Object Model (DOM)?',
+        options: [
+          'A programming interface representing HTML/XML documents as a node tree',
+          'A database management protocol for web browsers',
+          'The styling engine of CSS stylesheets',
+          'A cloud hosting server container',
+        ],
+        correctAnswer: 'A programming interface representing HTML/XML documents as a node tree',
+        explanation: 'The DOM represents the page so that programs like JavaScript can manipulate document structure, style, and content.',
+        quickExplanation: 'The DOM is the browser’s tree representation of HTML elements accessible via document.querySelector, etc.',
+        concept: 'Web Development → DOM Manipulation',
+      },
+      {
+        _id: 'q_js_13',
+        questionText: 'What does async/await accomplish in modern JavaScript?',
+        options: [
+          'Enables writing asynchronous promise-based code in a synchronous, readable style',
+          'Runs JavaScript code on multiple CPU threads concurrently in background',
+          'Automatically minifies and compiles scripts for production',
+          'Caches network responses in the browser cache storage',
+        ],
+        correctAnswer: 'Enables writing asynchronous promise-based code in a synchronous, readable style',
+        explanation: 'async/await is syntactic sugar over Promises, making asynchronous code cleaner to write and easier to debug with try/catch.',
+        quickExplanation: 'await pauses execution of the async function until the Promise settles, avoiding nested callback chains.',
+        concept: 'Asynchronous Programming → Async / Await',
+      },
+    ],
+  },
+  {
+    _id: 'quiz_dbms_funds',
+    title: 'DBMS Fundamentals',
+    description: 'Understand relational schemas, SQL, ACID transactions, normalization, indexing, and NoSQL architecture.',
+    category: 'Computer Science',
+    icon: 'database',
+    difficulty: 'Medium',
+    timeLimitMinutes: 12,
+    creatorName: 'Rahul Verma',
+    questions: [
+      {
+        _id: 'q_db_1',
+        questionText: 'What does the "A" in ACID database transactions stand for?',
+        options: ['Atomicity', 'Availability', 'Accuracy', 'Authentication'],
+        correctAnswer: 'Atomicity',
+        explanation: 'Atomicity ensures that all transaction operations succeed completely or are entirely rolled back.',
+        quickExplanation: 'ACID stands for Atomicity, Consistency, Isolation, and Durability.',
+        concept: 'Databases → ACID Transactions',
+      },
+      {
+        _id: 'q_db_2',
+        questionText: 'Which SQL constraint uniquely identifies each record in a database table?',
+        options: ['Foreign Key', 'Primary Key', 'Check Constraint', 'Unique Default'],
+        correctAnswer: 'Primary Key',
+        explanation: 'A Primary Key uniquely identifies each row and cannot contain NULL values.',
+        quickExplanation: 'Primary Keys uniquely identify rows, while Foreign Keys link rows across related tables.',
+        concept: 'Databases → Keys & Relational Schema',
+      },
+      {
+        _id: 'q_db_3',
+        questionText: 'What is the primary benefit of creating database indexes?',
+        options: [
+          'Speeds up data retrieval and query execution',
+          'Reduces disk storage footprint',
+          'Encrypts sensitive table rows',
+          'Eliminates duplicate values automatically',
+        ],
+        correctAnswer: 'Speeds up data retrieval and query execution',
+        explanation: 'Indexes create fast search data structures (like B-trees) that drastically reduce query search time.',
+        quickExplanation: 'Indexes speed up read operations (SELECT) at the cost of slightly slower write operations (INSERT/UPDATE).',
+        concept: 'Databases → Indexing & Performance',
+      },
+      {
+        _id: 'q_db_4',
+        questionText: 'Which normal form requires eliminating partial dependency of non-prime attributes on composite keys?',
+        options: ['First Normal Form (1NF)', 'Second Normal Form (2NF)', 'Third Normal Form (3NF)', 'BCNF'],
+        correctAnswer: 'Second Normal Form (2NF)',
+        explanation: '2NF requires the table to be in 1NF and have no partial dependency on any candidate key.',
+        quickExplanation: '1NF removes repeating groups, 2NF removes partial key dependencies, and 3NF removes transitive dependencies.',
+        concept: 'Databases → Database Normalization',
+      },
+      {
+        _id: 'q_db_5',
+        questionText: 'Which type of database is MongoDB classified as?',
+        options: ['Relational RDBMS', 'Document-oriented NoSQL', 'Graph Database', 'Key-Value Memory Cache'],
+        correctAnswer: 'Document-oriented NoSQL',
+        explanation: 'MongoDB stores data in flexible, JSON-like BSON documents grouped into collections.',
+        quickExplanation: 'Relational databases use tables and SQL, while MongoDB is a NoSQL document database.',
+        concept: 'Databases → NoSQL & Document Stores',
+      },
+    ],
+  },
+  {
+    _id: 'quiz_cn_funds',
+    title: 'Computer Networks',
+    description: 'Explore OSI layers, TCP/UDP protocols, IP routing, HTTP/HTTPS security, and network architecture.',
+    category: 'Computer Science',
+    icon: 'wifi',
+    difficulty: 'Medium',
+    timeLimitMinutes: 12,
+    creatorName: 'Rahul Verma',
+    questions: [
+      {
+        _id: 'q_cn_1',
+        questionText: 'Which layer of the OSI model is responsible for end-to-end reliable transmission and flow control?',
+        options: ['Network Layer', 'Transport Layer', 'Data Link Layer', 'Session Layer'],
+        correctAnswer: 'Transport Layer',
+        explanation: 'The Transport Layer (Layer 4) handles end-to-end communication, error recovery, and flow control (e.g. TCP).',
+        quickExplanation: 'Network layer handles IP routing, while Transport layer manages host-to-host ports and reliability.',
+        concept: 'Computer Networks → OSI Model',
+      },
+      {
+        _id: 'q_cn_2',
+        questionText: 'What is the main difference between TCP and UDP?',
+        options: [
+          'TCP is connection-oriented and reliable; UDP is connectionless and lightweight',
+          'UDP provides guaranteed packet delivery; TCP drops packets silently',
+          'TCP operates at Layer 7; UDP operates at Layer 2',
+          'TCP is only used for wireless devices; UDP is for wired networks',
+        ],
+        correctAnswer: 'TCP is connection-oriented and reliable; UDP is connectionless and lightweight',
+        explanation: 'TCP uses a 3-way handshake and packet acknowledgments for reliability, while UDP prioritizes speed with minimal overhead.',
+        quickExplanation: 'TCP guarantees delivery (used in HTTP, emails), while UDP is best for real-time gaming and audio/video streaming.',
+        concept: 'Computer Networks → TCP vs UDP',
+      },
+      {
+        _id: 'q_cn_3',
+        questionText: 'What is the standard port number for HTTPS secure web traffic?',
+        options: ['80', '443', '8080', '22'],
+        correctAnswer: '443',
+        explanation: 'Port 443 is the standard port for HTTPS encrypted with TLS/SSL. Port 80 is for unencrypted HTTP.',
+        quickExplanation: 'Port 80 is HTTP, Port 443 is HTTPS, Port 22 is SSH, and Port 21 is FTP.',
+        concept: 'Computer Networks → Ports & Protocols',
+      },
+      {
+        _id: 'q_cn_4',
+        questionText: 'What mechanism translates private IP addresses on a local LAN to a single public IP address?',
+        options: ['NAT (Network Address Translation)', 'DHCP', 'ARP', 'BGP'],
+        correctAnswer: 'NAT (Network Address Translation)',
+        explanation: 'NAT allows multiple devices in a local private network to share a single public IP address.',
+        quickExplanation: 'NAT conserves IPv4 addresses and shields internal local devices behind a router gateway.',
+        concept: 'Computer Networks → IP Addressing & NAT',
+      },
+      {
+        _id: 'q_cn_5',
+        questionText: 'Which protocol automatically assigns dynamic IP addresses to devices joining a network?',
+        options: ['DNS', 'DHCP', 'ICMP', 'SMTP'],
+        correctAnswer: 'DHCP',
+        explanation: 'Dynamic Host Configuration Protocol (DHCP) automatically provides an IP address, subnet mask, and gateway to client devices.',
+        quickExplanation: 'DNS translates names to IPs; DHCP assigns those IP addresses to network devices.',
+        concept: 'Computer Networks → Network Configuration & DHCP',
+      },
+    ],
+  },
+  {
     _id: 'quiz_sports_1',
     title: 'Sports & Physical Health',
     description: 'Test your understanding of sports, active living, fitness routines, and athletic records.',
@@ -925,6 +1203,31 @@ const deleteQuiz = async (id) => {
   return true;
 };
 
+const seedQuizzes = async () => {
+  const dbStatus = getDbStatus();
+  if (!dbStatus.isConnected) return;
+
+  try {
+    for (const q of initialQuizzes) {
+      const existing = await Quiz.findOne({ title: q.title });
+      if (!existing) {
+        const { _id, questions, ...quizToSeed } = q;
+        const cleanQuestions = (questions || []).map((qu) => {
+          const { _id: qId, ...quRest } = qu;
+          return quRest;
+        });
+        await Quiz.create({
+          ...quizToSeed,
+          questions: cleanQuestions,
+        });
+        console.log(`🌱 Seeded quiz: ${q.title}`);
+      }
+    }
+  } catch (err) {
+    console.warn('Quiz seed notice:', err.message);
+  }
+};
+
 module.exports = {
   initialQuizzes,
   memoryQuizzes,
@@ -933,4 +1236,5 @@ module.exports = {
   createQuiz,
   updateQuiz,
   deleteQuiz,
+  seedQuizzes,
 };
