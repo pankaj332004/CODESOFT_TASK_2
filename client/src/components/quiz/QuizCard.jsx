@@ -30,6 +30,26 @@ export const QuizCard = ({ quiz, onTakeQuiz }) => {
       </div>
 
       <div className="qm-quiz-card-body">
+        {quiz.isAssignedToMe && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(16, 185, 129, 0.12)', color: '#059669', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '12px', marginBottom: '6px' }}>
+            🎯 Assigned to You
+          </span>
+        )}
+        {quiz.isUpcomingExam && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(59, 130, 246, 0.12)', color: '#2563eb', fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '12px', marginBottom: '6px', marginLeft: quiz.isAssignedToMe ? '4px' : '0' }}>
+            ⏳ Starts: {new Date(quiz.examStartTime).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
+        {quiz.isActiveExamWindow && quiz.examEndTime && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '12px', marginBottom: '6px' }}>
+            🟢 Window Closes: {new Date(quiz.examEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
+        {quiz.isExpiredExam && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(239, 68, 68, 0.12)', color: '#dc2626', fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '12px', marginBottom: '6px' }}>
+            ⚠️ Window Closed
+          </span>
+        )}
         <h3 className="qm-quiz-card-title">{quiz.title}</h3>
         <p className="qm-quiz-card-meta">{questionCount} Questions</p>
         <p className="qm-quiz-card-author">By {quiz.creatorName || 'Instructor'}</p>
@@ -37,14 +57,14 @@ export const QuizCard = ({ quiz, onTakeQuiz }) => {
 
       <div className="qm-quiz-card-footer">
         <Button
-          variant="primary"
+          variant={quiz.isExpiredExam ? 'secondary' : 'primary'}
           size="md"
           className="qm-take-quiz-btn"
           onClick={handleStart}
           icon={<Play size={15} fill="currentColor" />}
           iconPosition="left"
         >
-          Attempt Quiz
+          {quiz.isUpcomingExam ? 'View Schedule' : quiz.isExpiredExam ? 'Review / Practice' : 'Attempt Quiz'}
         </Button>
       </div>
     </div>

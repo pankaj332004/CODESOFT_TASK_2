@@ -50,6 +50,17 @@ export const quizService = {
   async getMyResults() {
     return await apiClient('/results/my-results');
   },
+
+  async getQuizGradebook(quizId) {
+    return await apiClient(`/results/quiz/${quizId}/gradebook`);
+  },
+
+  async verifyPasscode(quizId, passcode) {
+    return await apiClient(`/quizzes/${quizId}/verify-passcode`, {
+      method: 'POST',
+      body: JSON.stringify({ passcode }),
+    });
+  },
 };
 
 export default quizService;

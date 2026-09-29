@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const authRoutes = require('./routes/authRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const resultRoutes = require('./routes/resultRoutes');
+const aiQuizRoutes = require('./routes/aiQuizRoutes');
 const notFound = require('./middleware/notFoundMiddleware');
 const errorHandler = require('./middleware/errorMiddleware');
 
@@ -15,8 +16,8 @@ app.use(cors({
   origin: '*', // Allow frontend dev server and network access
   credentials: true,
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
@@ -44,6 +45,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/results', resultRoutes);
+app.use('/api/ai-quizzes', aiQuizRoutes);
 
 // Error Handling
 app.use(notFound);

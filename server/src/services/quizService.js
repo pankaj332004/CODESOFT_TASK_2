@@ -1105,8 +1105,62 @@ const initialQuizzes = [
 // Memory store for quizzes
 let memoryQuizzes = [...initialQuizzes];
 
-const getAllQuizzes = async ({ search = '', category = '' } = {}) => {
+const getAllQuizzes = async ({ search = '', category = '', user = null } = {}) => {
   const dbStatus = getDbStatus();
+  const userEmail = user?.email ? user.email.trim().toLowerCase() : '';
+  const userIdStr = user?._id ? String(user._id) : '';
+  const userName = user?.name ? user.name.trim() : '';
+
+  const filterQuizForUser = (q) => {
+    const isPublic = q.isPublic !== false;
+    const assignedEmails = (q.assignedEmails || []).map((e) => String(e).trim().toLowerCase());
+    const hasAssignedList = assignedEmails.length > 0;
+
+    // If completely public with no specific student whitelist, anyone can see
+    if (isPublic && !hasAssignedList) {
+      return true;
+    }
+
+    // If restricted/assigned: only creator or specifically assigned user can see
+    if (!user) return false;
+
+    const isCreator =
+      (q.createdBy && String(q.createdBy) === userIdStr) ||
+      (userName && q.creatorName && q.creatorName.toLowerCase() === userName.toLowerCase());
+
+    const isAssigned = userEmail && assignedEmails.includes(userEmail);
+
+    return isCreator || isAssigned;
+  };
+
+  const decorateQuiz = (q) => {
+    const raw = typeof q.toObject === 'function' ? q.toObject() : { ...q };
+    const assignedEmails = (raw.assignedEmails || []).map((e) => String(e).trim().toLowerCase());
+    const now = new Date();
+
+    const isAssignedToMe = Boolean(userEmail && assignedEmails.includes(userEmail));
+    const isCreator = Boolean(
+      user &&
+        ((raw.createdBy && String(raw.createdBy) === userIdStr) ||
+          (userName && raw.creatorName && raw.creatorName.toLowerCase() === userName.toLowerCase()))
+    );
+
+    const startTime = raw.examStartTime ? new Date(raw.examStartTime) : null;
+    const endTime = raw.examEndTime ? new Date(raw.examEndTime) : null;
+
+    const isUpcomingExam = Boolean(startTime && startTime > now);
+    const isExpiredExam = Boolean(endTime && endTime < now);
+    const isActiveExamWindow = Boolean((!startTime || startTime <= now) && (!endTime || endTime >= now));
+
+    return {
+      ...raw,
+      isAssignedToMe,
+      isCreator,
+      isUpcomingExam,
+      isExpiredExam,
+      isActiveExamWindow,
+    };
+  };
 
   if (dbStatus.isConnected) {
     const query = {};
@@ -1119,7 +1173,9 @@ const getAllQuizzes = async ({ search = '', category = '' } = {}) => {
     if (category && category !== 'All' && category !== 'All Categories') {
       query.category = category;
     }
-    return await Quiz.find(query).sort({ createdAt: -1 });
+
+    const allDbQuizzes = await Quiz.find(query).sort({ createdAt: -1 });
+    return allDbQuizzes.filter(filterQuizForUser).map(decorateQuiz);
   }
 
   // Fallback memory store
@@ -1134,17 +1190,56 @@ const getAllQuizzes = async ({ search = '', category = '' } = {}) => {
     filtered = filtered.filter((q) => q.category.toLowerCase() === category.toLowerCase());
   }
 
-  return filtered;
+  return filtered.filter(filterQuizForUser).map(decorateQuiz);
 };
 
-const getQuizById = async (id) => {
+const getQuizById = async (id, user = null) => {
   const dbStatus = getDbStatus();
+  let quiz = null;
 
   if (dbStatus.isConnected) {
-    return await Quiz.findById(id);
+    quiz = await Quiz.findById(id);
+  } else {
+    quiz = memoryQuizzes.find((q) => String(q._id) === String(id));
   }
 
-  return memoryQuizzes.find((q) => String(q._id) === String(id));
+  if (!quiz) return null;
+
+  const raw = typeof quiz.toObject === 'function' ? quiz.toObject() : { ...quiz };
+  const userEmail = user?.email ? user.email.trim().toLowerCase() : '';
+  const userIdStr = user?._id ? String(user._id) : '';
+  const userName = user?.name ? user.name.trim() : '';
+
+  const assignedEmails = (raw.assignedEmails || []).map((e) => String(e).trim().toLowerCase());
+  const hasAssignedList = assignedEmails.length > 0;
+  const isPublic = raw.isPublic !== false;
+
+  const isCreator = Boolean(
+    user &&
+      ((raw.createdBy && String(raw.createdBy) === userIdStr) ||
+        (userName && raw.creatorName && raw.creatorName.toLowerCase() === userName.toLowerCase()))
+  );
+  const isAssignedToMe = Boolean(userEmail && assignedEmails.includes(userEmail));
+
+  // If private or assigned, enforce access authorization
+  if ((!isPublic || hasAssignedList) && !isCreator && !isAssignedToMe) {
+    const error = new Error('Access Restricted: You are not assigned to this private exam.');
+    error.status = 403;
+    throw error;
+  }
+
+  const now = new Date();
+  const startTime = raw.examStartTime ? new Date(raw.examStartTime) : null;
+  const endTime = raw.examEndTime ? new Date(raw.examEndTime) : null;
+
+  return {
+    ...raw,
+    isAssignedToMe,
+    isCreator,
+    isUpcomingExam: Boolean(startTime && startTime > now),
+    isExpiredExam: Boolean(endTime && endTime < now),
+    isActiveExamWindow: Boolean((!startTime || startTime <= now) && (!endTime || endTime >= now)),
+  };
 };
 
 const createQuiz = async (quizData, user) => {
@@ -1190,15 +1285,40 @@ const updateQuiz = async (id, quizData, user) => {
   return memoryQuizzes[idx];
 };
 
-const deleteQuiz = async (id) => {
+const deleteQuiz = async (id, user) => {
   const dbStatus = getDbStatus();
 
   if (dbStatus.isConnected) {
+    const quiz = await Quiz.findById(id);
+    if (!quiz) return null;
+
+    // Protection for default demo quizzes
+    if (initialQuizzes.some(iq => iq.title.toLowerCase() === quiz.title.toLowerCase()) && !quiz.createdBy) {
+      const err = new Error('Default baseline system quizzes cannot be deleted.');
+      err.status = 403;
+      throw err;
+    }
+
+    // Permission check: if quiz has createdBy and user is supplied
+    if (user && quiz.createdBy && String(quiz.createdBy) !== String(user._id) && quiz.creatorName !== user.name) {
+      const err = new Error('You do not have permission to delete this quiz.');
+      err.status = 403;
+      throw err;
+    }
+
     return await Quiz.findByIdAndDelete(id);
   }
 
   const idx = memoryQuizzes.findIndex((q) => String(q._id) === String(id));
   if (idx === -1) return false;
+  
+  const mQuiz = memoryQuizzes[idx];
+  if (user && mQuiz.createdBy && String(mQuiz.createdBy) !== String(user._id) && mQuiz.creatorName !== user.name) {
+    const err = new Error('You do not have permission to delete this quiz.');
+    err.status = 403;
+    throw err;
+  }
+
   memoryQuizzes.splice(idx, 1);
   return true;
 };

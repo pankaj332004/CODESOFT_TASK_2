@@ -75,6 +75,14 @@ const resultSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    isExpired: {
+      type: Boolean,
+      default: false,
+    },
+    submissionReason: {
+      type: String,
+      default: 'completed', // 'completed' | 'time_limit_expired' | 'exam_window_expired'
+    },
     answers: [answerRecordSchema],
   },
   {

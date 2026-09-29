@@ -8,6 +8,7 @@ import PerformanceChart from '../../components/results/PerformanceChart';
 import { useAuth } from '../../hooks/useAuth';
 import quizService from '../../services/quizService';
 import { formatTime } from '../../utils/formatTime';
+import GradebookModal from '../../components/results/GradebookModal';
 import {
   Trophy,
   CheckCircle,
@@ -23,6 +24,9 @@ import {
   Flame,
   Check,
   RotateCcw,
+  Lock,
+  Key,
+  Globe,
 } from 'lucide-react';
 
 export const Dashboard = () => {
@@ -33,6 +37,7 @@ export const Dashboard = () => {
   const [myQuizzes, setMyQuizzes] = useState([]);
   const [allQuizzes, setAllQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [gradebookQuiz, setGradebookQuiz] = useState(null);
 
   // Baseline mock data matching user's requested dashboard
   const defaultLearningAttempts = [
@@ -466,6 +471,90 @@ export const Dashboard = () => {
         </Button>
       </div>
 
+      {/* Assigned Exams Section (When user is explicitly whitelisted/assigned) */}
+      {allQuizzes.some((q) => q.isAssignedToMe) && (
+        <section className="dash-section-box" style={{ border: '2px solid rgba(16, 185, 129, 0.4)', background: 'rgba(16, 185, 129, 0.02)' }}>
+          <div className="dash-section-header">
+            <div className="section-title-wrap">
+              <h2 className="dash-section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#059669' }}>
+                <span>🎯</span> Exams Assigned to You
+              </h2>
+              <span className="section-subtitle-tag">Personal exams designated specifically for your attendance</span>
+            </div>
+          </div>
+
+          <div className="dash-created-list">
+            {allQuizzes.filter((q) => q.isAssignedToMe).map((quiz) => (
+              <div key={quiz._id} className="dash-created-item" style={{ borderLeft: '4px solid #10b981' }}>
+                <div className="created-item-info">
+                  <div className="created-quiz-title-row">
+                    <h3 className="created-quiz-title">{quiz.title}</h3>
+                    {quiz.isUpcomingExam && (
+                      <span className="dash-priv-badge" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#2563eb' }}>
+                        ⏳ Opens: {new Date(quiz.examStartTime).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                    {quiz.isActiveExamWindow && quiz.examEndTime && (
+                      <span className="dash-priv-badge" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#d97706' }}>
+                        🟢 Active Window (Deadline: {new Date(quiz.examEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
+                      </span>
+                    )}
+                    {quiz.isExpiredExam && (
+                      <span className="dash-priv-badge" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#dc2626' }}>
+                        ⚠️ Window Expired (0 Marks)
+                      </span>
+                    )}
+                  </div>
+                  <p className="created-quiz-meta">
+                    {quiz.questions?.length || 0} Questions • By {quiz.creatorName || 'Instructor'} • {quiz.timeLimitMinutes} Mins
+                  </p>
+                </div>
+
+                <div className="created-item-actions">
+                  <Button
+                    variant={quiz.isExpiredExam ? 'secondary' : 'primary'}
+                    size="sm"
+                    onClick={() => navigate(`/take-quiz/${quiz._id}?mode=exam`)}
+                    icon={<Play size={14} fill="currentColor" />}
+                  >
+                    {quiz.isUpcomingExam ? 'View Schedule' : quiz.isExpiredExam ? 'Review' : 'Take Exam'}
+                  </Button>
+                  {quiz.isExpiredExam || !quiz.examEndTime ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(`/take-quiz/${quiz._id}?mode=practice`)}
+                      icon={<GraduationCap size={14} />}
+                    >
+                      Practice Mode
+                    </Button>
+                  ) : (
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        padding: '5px 10px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: 'var(--text-secondary, #6b7280)',
+                        background: 'var(--card-bg-subtle, #f3f4f6)',
+                        borderRadius: '6px',
+                        border: '1px dashed var(--border-color, #d1d5db)',
+                        cursor: 'not-allowed',
+                      }}
+                      title="Practice Mode unlocks after the scheduled exam completion"
+                    >
+                      🔒 Practice Locked
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* My Created Quizzes Section */}
       <section className="dash-section-box dash-created-section">
         <div className="dash-section-header">
@@ -496,13 +585,34 @@ export const Dashboard = () => {
             {myQuizzes.map((quiz) => (
               <div key={quiz._id} className="dash-created-item">
                 <div className="created-item-info">
-                  <h3 className="created-quiz-title">{quiz.title}</h3>
+                  <div className="created-quiz-title-row">
+                    <h3 className="created-quiz-title">{quiz.title}</h3>
+                    {quiz.accessCode && (
+                      <span className="dash-code-badge" title="Students must enter this passcode">
+                        <Key size={12} /> PIN: <strong>{quiz.accessCode}</strong>
+                      </span>
+                    )}
+                    {quiz.isPublic === false && (
+                      <span className="dash-priv-badge" title="Hidden from public explore">
+                        <Lock size={12} /> Private
+                      </span>
+                    )}
+                  </div>
                   <p className="created-quiz-meta">
                     {quiz.questions?.length || 0} questions • {quiz.category} • {quiz.difficulty || 'Medium'}
                   </p>
                 </div>
 
                 <div className="created-item-actions">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setGradebookQuiz(quiz)}
+                    icon={<Trophy size={14} />}
+                    className="gradebook-btn"
+                  >
+                    Gradebook & Marks
+                  </Button>
                   <Button
                     variant="secondary"
                     size="sm"
@@ -532,6 +642,15 @@ export const Dashboard = () => {
           </div>
         )}
       </section>
+
+      {gradebookQuiz && (
+        <GradebookModal
+          isOpen={Boolean(gradebookQuiz)}
+          onClose={() => setGradebookQuiz(null)}
+          quizId={gradebookQuiz._id}
+          quizTitle={gradebookQuiz.title}
+        />
+      )}
     </PageContainer>
   );
 };

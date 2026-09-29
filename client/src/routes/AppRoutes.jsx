@@ -9,6 +9,7 @@ import QuizDetails from '../pages/Quizzes/QuizDetails';
 import TakeQuiz from '../pages/Quizzes/TakeQuiz';
 import CreateQuiz from '../pages/CreateQuiz/CreateQuiz';
 import EditQuiz from '../pages/CreateQuiz/EditQuiz';
+import AIQuizGenerator from '../pages/AIGenerator/AIQuizGenerator';
 import QuizResult from '../pages/Results/QuizResult';
 import Dashboard from '../pages/Dashboard/Dashboard';
 import SupportFAQ from '../pages/Static/SupportFAQ';
@@ -35,6 +36,14 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <CreateQuiz />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ai-quiz-generator"
+        element={
+          <ProtectedRoute>
+            <AIQuizGenerator />
           </ProtectedRoute>
         }
       />

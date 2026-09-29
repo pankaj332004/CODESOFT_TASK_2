@@ -10,17 +10,20 @@ import Modal from '../../components/common/Modal';
 import Button from '../../components/common/Button';
 import { useQuiz } from '../../hooks/useQuiz';
 import quizService from '../../services/quizService';
+import ExamPasscodeModal from '../../components/quiz/ExamPasscodeModal';
 import {
   StackedBooks,
   QuizNotepad,
   GlowingBulb,
 } from '../../assets/illustrations/Illustrations';
-import { GraduationCap, Timer, BookOpen, ArrowLeftRight, Sparkles, Clock } from 'lucide-react';
+import { GraduationCap, Timer, BookOpen, ArrowLeftRight, Sparkles, Clock, Lock } from 'lucide-react';
 
 export const TakeQuiz = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [passcodePrompt, setPasscodePrompt] = useState(false);
+  const [lockedQuizData, setLockedQuizData] = useState(null);
 
   const {
     currentQuiz,
@@ -57,6 +60,23 @@ export const TakeQuiz = () => {
   const examTotalSeconds = examTimeLimitMinutes * 60;
   const examRemainingSeconds = Math.max(0, examTotalSeconds - elapsedTime);
 
+  // Exam Schedule Window calculations
+  const nowTime = Date.now();
+  const examStartTimeMs = currentQuiz?.examStartTime ? new Date(currentQuiz.examStartTime).getTime() : null;
+  const examEndTimeMs = currentQuiz?.examEndTime ? new Date(currentQuiz.examEndTime).getTime() : null;
+
+  const isExamUpcoming = Boolean(quizMode === 'exam' && examStartTimeMs && examStartTimeMs > nowTime);
+  const isExamWindowClosed = Boolean(quizMode === 'exam' && examEndTimeMs && examEndTimeMs < nowTime);
+
+  // For quizzes with an exam schedule: Practice mode is strictly locked until AFTER the completion of exam time (examEndTime)
+  const isPracticeLockedUntilExamEnd = Boolean(examEndTimeMs && examEndTimeMs > nowTime);
+  const isPracticeModeBlocked = Boolean(quizMode === 'practice' && isPracticeLockedUntilExamEnd);
+
+  const secondsUntilWindowClose = examEndTimeMs ? Math.max(0, Math.floor((examEndTimeMs - nowTime) / 1000)) : null;
+  const effectiveExamRemaining = secondsUntilWindowClose !== null
+    ? Math.min(examRemainingSeconds, secondsUntilWindowClose)
+    : examRemainingSeconds;
+
   const toggleSidebarPosition = () => {
     setSidebarPosition((prev) => {
       const next = prev === 'left' ? 'right' : 'left';
@@ -71,6 +91,9 @@ export const TakeQuiz = () => {
 
   const handleModeChange = (newMode) => {
     if (newMode === quizMode) return;
+    if (newMode === 'practice' && isPracticeLockedUntilExamEnd) {
+      return;
+    }
     setQuizMode(newMode);
     setSearchParams({ mode: newMode }, { replace: true });
     if (newMode === 'exam') {
@@ -81,14 +104,17 @@ export const TakeQuiz = () => {
   };
 
   const handleSubmit = useCallback(
-    async (isAuto = false) => {
+    async (isAuto = false, submitOptions = {}) => {
       const isAutoFlag = typeof isAuto === 'boolean' ? isAuto : false;
       if (submitting) return;
       try {
-        const result = await submitQuiz();
+        const result = await submitQuiz({
+          autoSubmitted: isAutoFlag,
+          ...submitOptions,
+        });
         if (result && result._id) {
           navigate(`/results/${result._id}`, {
-            state: { autoSubmitted: isAutoFlag },
+            state: { autoSubmitted: isAutoFlag, isExpired: submitOptions.isExpired },
           });
         } else {
           navigate('/results/completed');
@@ -113,6 +139,15 @@ export const TakeQuiz = () => {
       .then((data) => {
         if (isMounted) {
           if (data) {
+            if (data.accessCode && data.accessCode.trim() !== '') {
+              const isUnlocked = sessionStorage.getItem(`quiz_unlocked_${id}`) === 'true';
+              if (!isUnlocked) {
+                setLockedQuizData(data);
+                setPasscodePrompt(true);
+                setLoading(false);
+                return;
+              }
+            }
             const initialMode = searchParams.get('mode') === 'practice' ? 'practice' : 'exam';
             startQuiz(data, initialMode);
           }
@@ -148,18 +183,200 @@ export const TakeQuiz = () => {
     setAutoSubmitted(false);
   }, [id, quizMode]);
 
-  // Auto-submit in Exam mode when countdown reaches 0
+  // Auto-submit in Exam mode when countdown reaches 0 or window closes
   useEffect(() => {
     if (quizMode === 'exam' && isTakingQuiz && !submitting && !autoSubmitTriggeredRef.current) {
-      if (examRemainingSeconds <= 0 && elapsedTime > 0) {
+      if (isExamWindowClosed) {
         autoSubmitTriggeredRef.current = true;
         setAutoSubmitted(true);
-        handleSubmit(true);
+        handleSubmit(true, { zeroMarks: true, isExpired: true, submissionReason: 'exam_window_expired' });
+      } else if (effectiveExamRemaining <= 0 && elapsedTime > 0) {
+        autoSubmitTriggeredRef.current = true;
+        setAutoSubmitted(true);
+        const answeredCount = Object.keys(selectedAnswers).filter((k) => selectedAnswers[k]).length;
+        const forceZero = answeredCount === 0;
+        handleSubmit(true, {
+          zeroMarks: forceZero,
+          isExpired: forceZero,
+          submissionReason: 'time_limit_expired',
+        });
       }
     }
-  }, [quizMode, isTakingQuiz, examRemainingSeconds, elapsedTime, submitting, handleSubmit]);
+  }, [
+    quizMode,
+    isTakingQuiz,
+    effectiveExamRemaining,
+    isExamWindowClosed,
+    elapsedTime,
+    submitting,
+    handleSubmit,
+    selectedAnswers,
+  ]);
 
   if (loading) return <Loader fullScreen message="Setting up your learning environment..." />;
+
+  if (passcodePrompt && lockedQuizData) {
+    return (
+      <div className="qm-quiz-arena-wrap">
+        <Navbar />
+        <ExamPasscodeModal
+          isOpen={true}
+          onClose={() => navigate(`/quizzes/${id}`)}
+          quiz={lockedQuizData}
+          onSuccess={() => {
+            setPasscodePrompt(false);
+            const initialMode = searchParams.get('mode') === 'practice' ? 'practice' : 'exam';
+            startQuiz(lockedQuizData, initialMode);
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Guard 1: Exam Mode Scheduled in the Future (Not Started Yet)
+  if (isExamUpcoming) {
+    const formattedStart = currentQuiz.examStartTime
+      ? new Date(currentQuiz.examStartTime).toLocaleString()
+      : 'Upcoming';
+    const formattedEnd = currentQuiz.examEndTime
+      ? new Date(currentQuiz.examEndTime).toLocaleString()
+      : null;
+
+    return (
+      <div className="qm-quiz-arena-screen">
+        <Navbar />
+        <div style={{ maxWidth: '640px', margin: '60px auto', padding: '36px 24px', textAlign: 'center', background: 'var(--card-bg, #ffffff)', borderRadius: '16px', boxShadow: 'var(--shadow-md, 0 4px 20px rgba(0,0,0,0.08))', border: '1px solid var(--border-color, #e5e7eb)' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(37, 99, 235, 0.1)', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Clock size={32} />
+          </div>
+          <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px' }}>Exam Not Started Yet</h2>
+          <p style={{ color: 'var(--text-secondary, #6b7280)', marginBottom: '18px', fontSize: '15px' }}>
+            This exam has been scheduled to open on: <br />
+            <strong style={{ color: 'var(--text-primary, #111827)', fontSize: '16px' }}>{formattedStart}</strong>
+          </p>
+          <div style={{ background: 'var(--card-bg-subtle, #f3f4f6)', padding: '14px 18px', borderRadius: '10px', marginBottom: '24px', fontSize: '14px', color: 'var(--text-secondary, #4b5563)' }}>
+            🔒 <strong>Strict Exam Schedule:</strong> Questions are strictly locked until the designated start time.
+            {formattedEnd && (
+              <span> Practice Mode and answer review will unlock strictly <strong>after the exam window completes</strong> on <em>{formattedEnd}</em>.</span>
+            )}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => navigate('/quizzes')}
+            >
+              Explore Other Quizzes
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => navigate('/dashboard')}
+            >
+              Return to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Guard 2: Practice Mode Locked until after completion of exam window
+  if (isPracticeModeBlocked) {
+    const formattedEnd = currentQuiz.examEndTime
+      ? new Date(currentQuiz.examEndTime).toLocaleString()
+      : 'the scheduled exam conclusion';
+    const isCurrentlyActiveWindow = examStartTimeMs ? nowTime >= examStartTimeMs : true;
+
+    return (
+      <div className="qm-quiz-arena-screen">
+        <Navbar />
+        <div style={{ maxWidth: '640px', margin: '60px auto', padding: '36px 24px', textAlign: 'center', background: 'var(--card-bg, #ffffff)', borderRadius: '16px', boxShadow: 'var(--shadow-md, 0 4px 20px rgba(0,0,0,0.08))', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.12)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Lock size={32} />
+          </div>
+          <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px' }}>Practice Mode Locked</h2>
+          <p style={{ color: 'var(--text-secondary, #6b7280)', marginBottom: '18px', fontSize: '15px' }}>
+            Practice Mode and question solutions for this scheduled quiz unlock strictly <strong>after the completion of the exam time</strong>:
+            <br />
+            <strong style={{ color: 'var(--text-primary, #111827)', fontSize: '16px' }}>{formattedEnd}</strong>
+          </p>
+          <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', padding: '14px 18px', borderRadius: '10px', marginBottom: '24px', fontSize: '14px', color: '#92400e' }}>
+            🛡️ <strong>Academic Integrity:</strong> Question answers and explanations cannot be practiced while the exam is upcoming or currently underway.
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            {isCurrentlyActiveWindow && (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => handleModeChange('exam')}
+                icon={<Timer size={16} />}
+              >
+                Attend Official Exam Now
+              </Button>
+            )}
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => navigate('/quizzes')}
+            >
+              Explore Other Quizzes
+            </Button>
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={() => navigate('/dashboard')}
+            >
+              Return to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Guard 2: Exam Mode Window Closed (Auto-submit with 0 marks)
+  if (isExamWindowClosed) {
+    const formattedEnd = currentQuiz.examEndTime
+      ? new Date(currentQuiz.examEndTime).toLocaleString()
+      : 'Closed';
+
+    return (
+      <div className="qm-quiz-arena-screen">
+        <Navbar />
+        <div style={{ maxWidth: '640px', margin: '60px auto', padding: '36px 24px', textAlign: 'center', background: 'var(--card-bg, #ffffff)', borderRadius: '16px', boxShadow: 'var(--shadow-md, 0 4px 20px rgba(0,0,0,0.08))', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Clock size={32} />
+          </div>
+          <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px', color: '#dc2626' }}>Exam Window Has Closed</h2>
+          <p style={{ color: 'var(--text-secondary, #6b7280)', marginBottom: '18px', fontSize: '15px' }}>
+            The time window to attend this exam closed on: <br />
+            <strong style={{ color: 'var(--text-primary, #111827)', fontSize: '16px' }}>{formattedEnd}</strong>
+          </p>
+          <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', padding: '14px 18px', borderRadius: '10px', marginBottom: '24px', fontSize: '14px', color: '#b91c1c' }}>
+            ⚠️ <strong>Auto-Submitted Policy:</strong> Because this exam was not attended or completed before the deadline, it has been recorded with <strong>0 marks</strong>.
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => handleModeChange('practice')}
+              icon={<BookOpen size={16} />}
+            >
+              Open in Practice & Learn Mode
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => navigate('/dashboard')}
+            >
+              Return to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentQuiz || !currentQuiz.questions || currentQuiz.questions.length === 0) {
     return (
@@ -223,11 +440,21 @@ export const TakeQuiz = () => {
               <button
                 type="button"
                 className={`mode-btn ${quizMode === 'practice' ? 'mode-active' : ''}`}
-                onClick={() => handleModeChange('practice')}
-                title="Learn with instant answers & concept explanations (Untimed)"
+                onClick={() => {
+                  if (!isPracticeLockedUntilExamEnd) {
+                    handleModeChange('practice');
+                  }
+                }}
+                disabled={isPracticeLockedUntilExamEnd}
+                style={isPracticeLockedUntilExamEnd ? { opacity: 0.55, cursor: 'not-allowed' } : {}}
+                title={
+                  isPracticeLockedUntilExamEnd
+                    ? 'Practice Mode unlocks after the scheduled exam completion'
+                    : 'Learn with instant answers & concept explanations (Untimed)'
+                }
               >
                 <GraduationCap size={16} />
-                <span>Practice & Learn Mode</span>
+                <span>{isPracticeLockedUntilExamEnd ? '🔒 Practice (Locked)' : 'Practice & Learn Mode'}</span>
               </button>
               <button
                 type="button"

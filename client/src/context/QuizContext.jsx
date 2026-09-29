@@ -115,10 +115,12 @@ export const QuizProvider = ({ children }) => {
     }
   }, [currentQuiz]);
 
-  const submitQuiz = useCallback(async () => {
+  const submitQuiz = useCallback(async (options = {}) => {
     if (!currentQuiz) return null;
     setIsTakingQuiz(false);
     setSubmitting(true);
+
+    const isZeroMarks = Boolean(quizMode === 'exam' && (options.zeroMarks || options.isExpired));
 
     try {
       // Map user answers by question ID or index
@@ -136,6 +138,10 @@ export const QuizProvider = ({ children }) => {
         quizId: currentQuiz._id,
         answers: answerPayload,
         timeTakenSeconds: elapsedTime,
+        mode: quizMode,
+        isExpired: Boolean(options.isExpired),
+        submissionReason: options.submissionReason || (options.autoSubmitted ? 'time_limit_expired' : 'completed'),
+        zeroMarks: isZeroMarks,
       });
 
       setLastResult(result);
@@ -147,17 +153,21 @@ export const QuizProvider = ({ children }) => {
       const total = currentQuiz.questions.length;
       const breakdown = currentQuiz.questions.map((q, idx) => {
         const chosen = selectedAnswers[idx] || '';
-        const isCorrect = chosen.trim() === q.correctAnswer.trim();
+        const isCorrect = !isZeroMarks && chosen.trim() === q.correctAnswer.trim();
         if (isCorrect) score += 1;
         return {
           questionId: q._id || String(idx),
           questionText: q.questionText,
-          selectedAnswer: chosen || 'No answer selected',
+          selectedAnswer: isZeroMarks ? 'Not answered (Missed / Expired Exam Window)' : chosen || 'No answer selected',
           correctAnswer: q.correctAnswer,
           isCorrect,
           explanation: q.explanation || '',
         };
       });
+
+      if (isZeroMarks) {
+        score = 0;
+      }
 
       const fallbackResult = {
         _id: `res_${Date.now()}`,
@@ -165,8 +175,11 @@ export const QuizProvider = ({ children }) => {
         quizTitle: currentQuiz.title,
         score,
         totalQuestions: total,
-        percentage: total > 0 ? Math.round((score / total) * 100) : 0,
+        percentage: isZeroMarks ? 0 : total > 0 ? Math.round((score / total) * 100) : 0,
         timeTakenSeconds: elapsedTime,
+        mode: quizMode,
+        isExpired: Boolean(options.isExpired || isZeroMarks),
+        submissionReason: options.submissionReason || 'completed',
         answers: breakdown,
         createdAt: new Date().toISOString(),
       };

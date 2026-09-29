@@ -44,6 +44,14 @@ export const Navbar = () => {
           >
             Create Quiz
           </NavLink>
+          <NavLink
+            to="/ai-quiz-generator"
+            className={({ isActive }) =>
+              `qm-nav-link qm-nav-ai-link ${isActive ? 'active' : ''}`
+            }
+          >
+            <span className="ai-nav-badge">✨ AI Generator</span>
+          </NavLink>
         </nav>
 
         {/* Actions: Theme Toggle & Auth Buttons */}

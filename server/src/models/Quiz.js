@@ -76,6 +76,23 @@ const quizSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    accessCode: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    assignedEmails: {
+      type: [String],
+      default: [],
+    },
+    examStartTime: {
+      type: Date,
+      default: null,
+    },
+    examEndTime: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

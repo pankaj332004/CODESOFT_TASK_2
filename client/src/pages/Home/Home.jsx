@@ -62,8 +62,8 @@ export const Home = () => {
           </h1>
 
           <p className="qm-hero-subtitle">
-            Build your own quizzes, share them with others and test your knowledge.
-            A simple and fun way to learn anything, anytime, anywhere.
+            Build quizzes manually or let AI create one for you.
+            A simple and intelligent way to test knowledge, anytime, anywhere.
           </p>
 
           <div className="qm-hero-cta-group">
@@ -76,6 +76,17 @@ export const Home = () => {
               className="qm-hero-create-btn"
             >
               Create a Quiz
+            </Button>
+
+            <Button
+              variant="accent"
+              size="lg"
+              onClick={() => navigate('/ai-quiz-generator')}
+              icon={<Sparkles size={18} />}
+              iconPosition="left"
+              className="qm-hero-ai-btn"
+            >
+              ✨ Generate with AI
             </Button>
 
             <Button

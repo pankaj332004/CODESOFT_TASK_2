@@ -2,13 +2,22 @@ const {
   submitQuizResult,
   getResultById,
   getUserResults,
+  getQuizGradebook,
 } = require('../services/resultService');
 
 // @desc Submit quiz answers and compute score
 // @route POST /api/results
 const submitResult = async (req, res, next) => {
   try {
-    const { quizId, answers, timeTakenSeconds } = req.body;
+    const {
+      quizId,
+      answers,
+      timeTakenSeconds,
+      mode,
+      isExpired,
+      submissionReason,
+      zeroMarks,
+    } = req.body;
 
     if (!quizId) {
       return res.status(400).json({ message: 'Quiz ID is required' });
@@ -19,6 +28,10 @@ const submitResult = async (req, res, next) => {
       answers: answers || {},
       timeTakenSeconds: timeTakenSeconds || 0,
       user: req.user,
+      mode: mode || 'practice',
+      isExpired: Boolean(isExpired),
+      submissionReason: submissionReason || 'completed',
+      zeroMarks: Boolean(zeroMarks),
     });
 
     res.status(201).json(result);
@@ -56,8 +69,20 @@ const getMyResults = async (req, res, next) => {
   }
 };
 
+// @desc Get student gradebook and submissions for a quiz (Creator Only)
+// @route GET /api/results/quiz/:quizId/gradebook
+const getGradebook = async (req, res, next) => {
+  try {
+    const gradebook = await getQuizGradebook(req.params.quizId, req.user);
+    res.json(gradebook);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   submitResult,
   getResult,
   getMyResults,
+  getGradebook,
 };

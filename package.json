@@ -13,7 +13,16 @@
   "devDependencies": {
     "concurrently": "^8.2.2"
   },
-  "keywords": ["quiz", "react", "express", "vite", "education"],
+  "keywords": [
+    "quiz",
+    "react",
+    "express",
+    "vite",
+    "education"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer-core": "^25.12.0"
+  }
 }
