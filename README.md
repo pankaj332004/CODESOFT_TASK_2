@@ -68,6 +68,50 @@ Designed not merely as a simple trivia app, but as a complete **Pedagogical Mast
 
 ---
 
+## 📸 Visual Tour & Application Screenshots
+
+### 1. Hero Landing & Multimodal AI Quiz Generator
+| **Hero Landing Page** | **Multimodal AI Quiz Generator (Gemini 3.5 Flash)** |
+|:---:|:---:|
+| ![Home Page](./screenshots/01_home_page.png) | ![AI Quiz Generator](./screenshots/02_ai_quiz_generator.png) |
+| *Modern educational landing page with feature highlights and one-click demo login.* | *Generate quizzes from Topics, pasted study notes, or uploaded textbook diagrams.* |
+
+---
+
+### 2. Catalog & Exam Scheduling Administration
+| **Explore Quizzes & Badges** | **Exam Window & Student Whitelist Scheduler** |
+|:---:|:---:|
+| ![Explore Quizzes Catalog](./screenshots/03_explore_catalog.png) | ![Create Quiz Scheduler](./screenshots/04_create_quiz_scheduler.png) |
+| *Real-time badges: 🎯 Assigned to You, 🟢 Active Window, ⏳ Starts Soon, ⚠️ Window Closed.* | *Instructor tools: email whitelist assignment and strict start/end schedule window.* |
+
+---
+
+### 3. Dual-Mode Arena & Academic Integrity Enforcement
+| **Practice & Learn Mode Arena** | **Academic Integrity: Practice Mode Locked** |
+|:---:|:---:|
+| ![Practice Learning Arena](./screenshots/05_practice_learning_arena.png) | ![Practice Locked Guard](./screenshots/06_practice_locked_guard.png) |
+| *Self-paced learning with instant distractor feedback and concept trails.* | *Practice mode is strictly locked during an active exam to prevent premature answer leaks.* |
+
+---
+
+### 4. Automated Deadline Enforcement & Results
+| **Auto-0 Marks Expired Exam Guard** | **Instructor Classroom Gradebook & CSV** |
+|:---:|:---:|
+| ![Exam Window Expired Guard](./screenshots/07_exam_expired_guard.png) | ![Classroom Gradebook](./screenshots/09_classroom_gradebook.png) |
+| *Strict deadline policy: non-attendance or overdue exams submit with 0 marks.* | *Full roster gradebook with submission status, question breakdown, and CSV export.* |
+
+---
+
+### 5. Continuous Learning Dashboard
+<p align="center">
+  <img src="./screenshots/08_student_dashboard.png" alt="Student Dashboard" width="90%" />
+</p>
+<p align="center">
+  <em>Personal Learning Dashboard featuring "🎯 Exams Assigned to You", native Bezier SVG performance progression curve, recent attempt analysis, and 1-click targeted remediation.</em>
+</p>
+
+---
+
 ## 🏗️ System Architecture Diagram
 
 ```mermaid
